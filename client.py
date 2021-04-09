@@ -12,7 +12,7 @@ clientSocket = socket(AF_INET, SOCK_STREAM)
 clientSocket.connect((serverName,serverPort))
 
 # Recieve user input from keyboard
-sentence = input('Input lowercase sentence:')
+sentence = "index.html"
 
 # Send! No need to specify Server Name and Server Port! Why?
 clientSocket.send(sentence.encode())
