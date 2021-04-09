@@ -1,5 +1,6 @@
 # Include Python's Socket Library
 from socket import *
+from datetime import *
 
 # Specify Server Port
 serverPort = 12000
@@ -9,10 +10,11 @@ serverSocket = socket(AF_INET, SOCK_STREAM)
 
 
 def sendHtml(connectionSocket, resp):
+    d = datetime.now()
+    print(d)
     if resp == '200':
-        connectionSocket.send(('HTTP/1.1 200 OK\n').encode()
-                            )  # 1.0 should work as well
-        
+        connectionSocket.send(('HTTP/1.1 200 OK\n').encode())  # 1.0 should work as well 
+        connectionSocket.send(('max-age=60\nExpires: Fri, 9 Apr 2021 17:47:04 PST\n').encode())
         connectionSocket.send(('Content-Type: text/html\n').encode())
         # header and body should be separated by additional newline
         
@@ -59,7 +61,7 @@ while True:  # Loop forever
     sentence = connectionSocket.recv(1024).decode()
     req = sentence.split('\r\n', 1)
     location = req[0].split(' ')
-    print(location)
+    print('\n' + sentence)
     resp = '200'
 
     if location[1] == "/index.html" or location[1] == '/':
