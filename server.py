@@ -2,6 +2,8 @@
 from socket import *
 from datetime import *
 
+
+
 # Specify Server Port
 serverPort = 12000
 
@@ -15,6 +17,7 @@ def sendHtml(connectionSocket, resp):
     if resp == '200':
         connectionSocket.send(('HTTP/1.1 200 OK\r\n').encode())  # 1.0 should work as well 
         connectionSocket.send(('max-age=60\nExpires: Fri, 9 Apr 2021 17:47:04 PST\r\n').encode())
+        connectionSocket.send(('Last-Modified: Fri, 9 Apr 2021 20:26:00 GMT\r\n').encode())
         connectionSocket.send(('Content-Type: text/html\r\n').encode())
         # header and body should be separated by additional newline
         
@@ -62,13 +65,20 @@ while True:  # Loop forever
     req = sentence.split('\r\n', 1)
     location = req[0].split(' ')
     print('\n' + sentence)
+    print('req: ', req)
+    print('\nlocation: ', location)
     resp = '200'
 
-    if location[1] == "/index.html" or location[1] == '/':
-        # OK query
-        print("OK")
+    
+    if location[0] != 'GET' and location[2] != 'HTTP/1.1\r\n' and len(location) != 3 :
+        # 400 Bad request, checked first in case the request is incorrect
+        resp = '400'
+        print("Bad request")
+    elif location[1] == "/index.html" or location[1] == '/':
+        # 200 OK
+        print('true')
     else:
-        # asking for file that doesnt exist
+        # 404 Not Found
         resp = "404"
         print("Not Found")
     # Send the reply
