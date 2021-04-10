@@ -69,8 +69,11 @@ while True:  # Loop forever
     print('\nlocation: ', location)
     resp = '200'
 
-    
-    if location[0] != 'GET' and location[2] != 'HTTP/1.1\r\n' and len(location) != 3 :
+    if len(location) < 3:
+        # 408 Request Timed Out, could try to read again from the socket, but use a non-blocking call
+        resp = '408'
+        print('Request Timed Out')
+    elif location[0] != 'GET' and location[2] != 'HTTP/1.1\r\n' or len(location) != 3 :
         # 400 Bad request, checked first in case the request is incorrect
         resp = '400'
         print("Bad request")
