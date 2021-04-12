@@ -45,10 +45,11 @@ def sendHtml(connectionSocket, resp):
                               )
     elif resp == '304':
         datenow = datetime.strftime(datetime.now(), "%a, %d %b %Y %H:%M:%S %Z")
-        connectionSocket.send(('HTTP/1.1 304 Not Modified\r\n').encode()
+        # Made the reply into one string before sending it because I was having trouble
+        # receiving all of it at client.py
+        reply = 'HTTP/1.1 304 Not Modified\r\nDate: ' + datenow + '\r\n'
+        connectionSocket.send(reply.encode()
                               )
-        connectionSocket.send(('Date: ' + datenow + '\r\n').encode()
-                             )
     elif resp == '400':
         connectionSocket.send(('HTTP/1.1 400 Bad Request\r\n').encode()
                               )
