@@ -4,6 +4,8 @@ from datetime import *
 import threading
 import sys
 
+
+
 # Specify Server Port
 # Port 80 is the defacto http port
 # access the server by using http://localhost or http://localhost/index.html
@@ -89,7 +91,8 @@ def makeConnection(connectionSocket, addr):
             ifModifiedSince, "%a, %d %b %Y %H:%M:%S %Z")
 
         print(ifModifiedSinceTime)
-        if ifModifiedSince  :
+        # Using datetime.now(), needs to be updated
+        if ifModifiedSince < datetime.strftime(datetime.now(), "%Y-%b-%d %H:%M:%S") : 
             resp = '304'
         print("Not Modified")
     elif location[1] == "/index.html" or location[1] == '/':
