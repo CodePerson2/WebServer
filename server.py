@@ -35,7 +35,8 @@ def sendHtml(connectionSocket, resp):
             <title>Webserver</title>
             </head>
             <body>
-            <h1 style='color:red'>Shit works</h1> yeeee
+            <h1 style='color:red'>Hello, welcome to Ramish's and Mattias's webserver</h1> 
+            <h1 style='font-size: 3rem; margin:auto; text-align: center'>&#128512</h1>
             </body>
             </html>
         """).encode())
