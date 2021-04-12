@@ -44,8 +44,11 @@ def sendHtml(connectionSocket, resp):
         connectionSocket.send(('HTTP/1.1 404 Not Found\r\n').encode()
                               )
     elif resp == '304':
+        datenow = datetime.strftime(datetime.now(), "%a, %d %b %Y %H:%M:%S %Z")
         connectionSocket.send(('HTTP/1.1 304 Not Modified\r\n').encode()
                               )
+        connectionSocket.send(('Date: ' + datenow + '\r\n').encode()
+                             )
     elif resp == '400':
         connectionSocket.send(('HTTP/1.1 400 Bad Request\r\n').encode()
                               )
@@ -93,7 +96,7 @@ def makeConnection(connectionSocket, addr):
 
         print(ifModifiedSinceTime)
         # Using datetime.now(), needs to be updated
-        if ifModifiedSince < datetime.strftime(datetime.now(), "%Y-%b-%d %H:%M:%S") : 
+        if ifModifiedSinceTime < datetime.now(): 
             resp = '304'
         print("Not Modified")
     elif location[1] == "/index.html" or location[1] == '/':
