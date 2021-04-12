@@ -1,7 +1,6 @@
 # Include Python's Socket Library
 from socket import *
 from datetime import *
-import threading
 import sys
 
 
@@ -128,12 +127,8 @@ try:
         # New socket created on return
         connectionSocket, addr = serverSocket.accept()
 
-        # create thread when server recieves connection request
-        # Probably should pass through thread and end it when connection is closed
-        # This now works for mutliple connections (ie: browsers/tabs open)
-        th = threading.Thread(target=makeConnection,
-                              args=(connectionSocket, addr))
-        th.start()
+        # Single threaded version
+        makeConnection(connectionSocket, addr)
 
     # This wasnt working for me, I commented it out jsut becasue wasnt sure where to put it
     # When I was changing the code around
