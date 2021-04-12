@@ -5,7 +5,6 @@ import threading
 import sys
 
 
-
 # Specify Server Port
 # Port 80 is the defacto http port
 # access the server by using http://localhost or http://localhost/index.html
@@ -16,19 +15,20 @@ serverSocket = socket(AF_INET, SOCK_STREAM)
 
 
 def sendHtml(connectionSocket, resp):
-    d = datetime.now()
-    print(d)
-    if resp == '200':
-        connectionSocket.send(('HTTP/1.1 200 OK\r\n').encode())
-        connectionSocket.send(('max-age=60\r\n').encode())
-        connectionSocket.send(('Cache-Control: no-cache\r\n').encode())
-        connectionSocket.send(
-            ('Last-Modified: Fri, 9 Apr 2021 20:26:00 GMT\r\n').encode())
-        connectionSocket.send(('Content-Type: text/html\r\n').encode())
-        # header and body should be separated by additional newline
+    #d = datetime.now()
+    # print(d)
 
-        connectionSocket.send(('\r\n').encode())
-        connectionSocket.send(("""
+    responseString = '';
+    if resp == '200':
+        responseString += 'HTTP/1.1 200 OK\r\n'
+        responseString += 'max-age=60\r\n'
+        responseString += 'Cache-Control: no-cache\r\n'
+        responseString += 'Content-Type: text/html\r\n'
+        responseString += 'HTTP/1.1 200 OK\r\n'
+
+        # header and body should be separated by additional newline
+        responseString += '\r\n'
+        responseString += """
             <html>
             <head>
             <title>Webserver</title>
@@ -38,7 +38,9 @@ def sendHtml(connectionSocket, resp):
             <h1 style='font-size: 3rem; margin:auto; text-align: center'>&#128512</h1>
             </body>
             </html>
-        """).encode())
+        """
+        connectionSocket.send((responseString).encode())
+        
     elif resp == '404':
         connectionSocket.send(('HTTP/1.1 404 Not Found\r\n').encode()
                               )
@@ -59,7 +61,9 @@ def sendHtml(connectionSocket, resp):
     # Close connectiion too client (but not welcoming socket)
     connectionSocket.close()
 
-#handles making the connection, uses sendHtml() to return webpage
+# handles making the connection, uses sendHtml() to return webpage
+
+
 def makeConnection(connectionSocket, addr):
 
     # Read from socket (but not address as in UDP)
@@ -96,7 +100,7 @@ def makeConnection(connectionSocket, addr):
 
         print(ifModifiedSinceTime)
         # Using datetime.now(), needs to be updated
-        if ifModifiedSinceTime < datetime.now(): 
+        if ifModifiedSinceTime < datetime.now():
             resp = '304'
         print("Not Modified")
     elif location[1] == "/index.html" or location[1] == '/':
@@ -126,7 +130,8 @@ try:
         # create thread when server recieves connection request
         # Probably should pass through thread and end it when connection is closed
         # This now works for mutliple connections (ie: browsers/tabs open)
-        th = threading.Thread(target=makeConnection, args=(connectionSocket, addr))
+        th = threading.Thread(target=makeConnection,
+                              args=(connectionSocket, addr))
         th.start()
 
     # This wasnt working for me, I commented it out jsut becasue wasnt sure where to put it
