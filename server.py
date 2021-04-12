@@ -19,7 +19,6 @@ def sendHtml(connectionSocket, resp):
     d = datetime.now()
     print(d)
     if resp == '200':
-        # 1.0 should work as well
         connectionSocket.send(('HTTP/1.1 200 OK\r\n').encode())
         connectionSocket.send(('max-age=60\r\n').encode())
         connectionSocket.send(('Cache-Control: no-cache\r\n').encode())
