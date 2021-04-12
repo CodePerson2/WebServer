@@ -89,7 +89,7 @@ def makeConnection(connectionSocket, addr):
             ifModifiedSince, "%a, %d %b %Y %H:%M:%S %Z")
 
         print(ifModifiedSinceTime)
-        if ifModifiedSince:
+        if ifModifiedSince  :
             resp = '304'
         print("Not Modified")
     elif location[1] == "/index.html" or location[1] == '/':
@@ -110,19 +110,25 @@ serverSocket.bind(('', serverPort))
 serverSocket.listen(1)
 print('The server is ready to receive')
 
-while True:  # Loop forever
-    # Server waits on accept for incoming requests.
-    # New socket created on return
-    connectionSocket, addr = serverSocket.accept()
+try:
+    while True:  # Loop forever
+        # Server waits on accept for incoming requests.
+        # New socket created on return
+        connectionSocket, addr = serverSocket.accept()
 
-    # create thread when server recieves connection request
-    # Probably should pass through thread and end it when connection is closed
-    # This now works for mutliple connections (ie: browsers/tabs open)
-    th = threading.Thread(target=makeConnection, args=(connectionSocket, addr))
-    th.start()
+        # create thread when server recieves connection request
+        # Probably should pass through thread and end it when connection is closed
+        # This now works for mutliple connections (ie: browsers/tabs open)
+        th = threading.Thread(target=makeConnection, args=(connectionSocket, addr))
+        th.start()
 
-# This wasnt working for me, I commented it out jsut becasue wasnt sure where to put it
-# When I was changing the code around
-# except KeyboardInterrupt:
-#     serverSocket.close()
-#     sys.exit(0)
+    # This wasnt working for me, I commented it out jsut becasue wasnt sure where to put it
+    # When I was changing the code around
+    # Spam a bunch of CTRL+C and then send a HTTP request, the server will close.
+    # The serverSocket.accept() is blocking, buffering a bunch of keyboard interrupts
+    # allows the program to stop when the program is unblocked
+except KeyboardInterrupt:
+    serverSocket.close()
+    print("Server is closed")
+    th.join()
+    sys.exit(0)
