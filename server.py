@@ -72,8 +72,9 @@ def makeConnection(connectionSocket, addr):
         try:
             sentence2 = connectionSocket.recv(1024).decode()
             sentence = sentence + sentence2
-            location = sentence.split(' ')
-            print("Sentence2: ", sentence)
+            location += sentence2.split(' ')
+            location.pop(2)
+            print("Sentence2: ", location)
         except timeout:
             resp = '408'
             print('Request Timed Out')
