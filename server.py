@@ -36,7 +36,7 @@ def sendHtml(connectionSocket, resp, lastModified, fileData):
         connectionSocket.send(('HTTP/1.1 404 Not Found\r\n').encode()
                               )
     elif resp == '304':
-        datenow = datetime.strftime(datetime.now(), "%a, %d %b %Y %H:%M:%S %Z")
+        datenow = datetime.strftime(lastModified, "%a, %d %b %Y %H:%M:%S %Z")
         # Made the reply into one string before sending it because I was having trouble
         # receiving all of it at client.py
         reply = 'HTTP/1.1 304 Not Modified\r\nDate: ' + datenow + '\r\n'
@@ -51,7 +51,6 @@ def sendHtml(connectionSocket, resp, lastModified, fileData):
 
     # Close connectiion too client (but not welcoming socket)
     connectionSocket.close()
-    print("releasing mutex")
 
 # handles making the connection, uses sendHtml() to return webpage
 def makeConnection(connectionSocket, addr):
