@@ -24,7 +24,6 @@ def sendHtml(connectionSocket, resp, lastModified, fileData):
         responseString += 'max-age=60\r\n'
         responseString += 'Cache-Control: no-cache\r\n'
         responseString += 'Content-Type: text/html\r\n'
-        responseString += 'HTTP/1.1 200 OK\r\n'
 
         # Last-Modified: Fri, 9 Apr 2021 20:26:00 GMT\r\n
         # header and body should be separated by additional newline
@@ -36,7 +35,7 @@ def sendHtml(connectionSocket, resp, lastModified, fileData):
         connectionSocket.send(('HTTP/1.1 404 Not Found\r\n').encode()
                               )
     elif resp == '304':
-        datenow = datetime.strftime(datetime.now(), "%a, %d %b %Y %H:%M:%S %Z")
+        datenow = datetime.strftime(lastModified, "%a, %d %b %Y %H:%M:%S %Z")
         # Made the reply into one string before sending it because I was having trouble
         # receiving all of it at client.py
         reply = 'HTTP/1.1 304 Not Modified\r\nDate: ' + datenow + '\r\n'
