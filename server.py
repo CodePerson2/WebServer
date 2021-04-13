@@ -70,7 +70,7 @@ def makeConnection(connectionSocket, addr):
 
     if len(location) < 3:
         # 408 Request Timed Out, could try to read again from the socket, but use a non-blocking call with a timeout
-        connectionSocket.settimeout(10)
+        connectionSocket.settimeout(2)
         try:
             sentence2 = connectionSocket.recv(1024).decode()
             sentence = sentence + sentence2
