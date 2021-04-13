@@ -1,9 +1,11 @@
 # Include Python's Socket Library
 from socket import *
 from datetime import *
+import threading
 import sys
+import os.path
 
-
+# The
 # Specify Server Port
 # Port 80 is the defacto http port
 # access the server by using http://localhost or http://localhost/index.html
@@ -12,12 +14,11 @@ serverPort = 80
 # Create TCP welcoming socket
 serverSocket = socket(AF_INET, SOCK_STREAM)
 
-
-def sendHtml(connectionSocket, resp):
+def sendHtml(connectionSocket, resp, lastModified, fileData):
     #d = datetime.now()
     # print(d)
 
-    responseString = '';
+    responseString = ''
     if resp == '200':
         responseString += 'HTTP/1.1 200 OK\r\n'
         responseString += 'max-age=60\r\n'
@@ -28,17 +29,7 @@ def sendHtml(connectionSocket, resp):
         # Last-Modified: Fri, 9 Apr 2021 20:26:00 GMT\r\n
         # header and body should be separated by additional newline
         responseString += '\r\n'
-        responseString += """
-            <html>
-            <head>
-            <title>Webserver</title>
-            </head>
-            <body>
-            <h1 style='color:red'>Hello, welcome to Ramish's and Mattias's webserver</h1> 
-            <h1 style='font-size: 3rem; margin:auto; text-align: center'>&#128512</h1>
-            </body>
-            </html>
-        """
+        responseString +=  fileData
         connectionSocket.send((responseString).encode())
 
     elif resp == '404':
@@ -60,17 +51,15 @@ def sendHtml(connectionSocket, resp):
 
     # Close connectiion too client (but not welcoming socket)
     connectionSocket.close()
+    print("releasing mutex")
 
 # handles making the connection, uses sendHtml() to return webpage
-
-
 def makeConnection(connectionSocket, addr):
-
     # Read from socket (but not address as in UDP)
     sentence = connectionSocket.recv(1024).decode()
     req = sentence.split('\r\n')
     location = req[0].split(' ')
-    print('\n' + sentence)
+    print('\nSentence 1: ' + sentence)
     print('req: ', req)
     print('\nlocation: ', location)
     resp = '200'
@@ -78,32 +67,74 @@ def makeConnection(connectionSocket, addr):
     # Find if there is a If-Modified-Since in the request
     ifModifiedSinceFlag = False
     ifModifiedSince = ''
+
+    if len(location) < 3:
+        # 408 Request Timed Out, could try to read again from the socket, but use a non-blocking call with a timeout
+        connectionSocket.settimeout(10)
+        try:
+            sentence2 = connectionSocket.recv(1024).decode()
+            sentence = sentence + sentence2
+            print("Sentence2: ", sentence)
+        except timeout:
+            resp = '408'
+            print('Request Timed Out')
+            sendHtml(connectionSocket, resp, '', '')
+
     # Check if any lines in the request begin with If-Modified-Since
     for line in req:
         if line.find('If-Modified-Since: ') != -1:
             ifModifiedSinceFlag = True
             ifModifiedSince = line[19:len(line)]
-            print('If-Modified-Since: ' + ifModifiedSince)
+            print('If-Modified-Since: ' + ifModifiedSince)        
 
-    if len(location) < 3:
-        # 408 Request Timed Out, could try to read again from the socket, but use a non-blocking call with a timeout
-        resp = '408'
-        print('Request Timed Out')
-    elif location[0] != 'GET' and location[2] != 'HTTP/1.1\r\n' or len(location) != 3:
+    # Check if the HTML file exists locally
+    if location[1] == '/':
+        filePath = './index.html'
+    else:
+        filePath = '.' + location[1]
+    fileData = ''
+    fileLastModified = datetime.now()
+    fileExists = False
+    if os.path.exists(filePath):
+        # Check if it is a directory and update the path
+        if os.path.isdir(filePath):
+            if location[1] == '/':
+                filePath = filePath + '/index.html'
+            else:
+                filePath = filePath + location[1]
+        # Check the file still exists if the first one was a directory
+        # Extract the last modified date and HTML
+        if os.path.exists(filePath):
+            fileExists = True
+            fileLastModified = os.path.getmtime(filePath)
+            fileLastModified = datetime.fromtimestamp(fileLastModified)
+            print(fileLastModified)
+            fp = open(filePath)
+            data = fp.readlines()
+            fp.close()
+            
+            fileData = data[0]
+            for i in range(1,len(data)):
+                fileData = fileData + data[i]
+            print("File exists locally: ", filePath)
+            print(fileLastModified)
+            print(fileData)
+
+    if location[0] != 'GET' and location[2] != 'HTTP/1.1\r\n' or len(location) != 3:
         # 400 Bad request, checked first in case the request is incorrect
         resp = '400'
         print("Bad request")
-    elif ifModifiedSinceFlag:
+    elif ifModifiedSinceFlag and fileExists:
         # 304 Not Modified
         ifModifiedSinceTime = datetime.strptime(
             ifModifiedSince, "%a, %d %b %Y %H:%M:%S %Z")
 
         print(ifModifiedSinceTime)
         # Using datetime.now(), needs to be updated
-        if ifModifiedSinceTime < datetime.now():
+        if ifModifiedSinceTime < fileLastModified:
             resp = '304'
         print("Not Modified")
-    elif location[1] == "/index.html" or location[1] == '/':
+    elif fileExists:
         # 200 OK
         print('true')
     else:
@@ -111,7 +142,7 @@ def makeConnection(connectionSocket, addr):
         resp = "404"
         print("Not Found")
     # Send the reply
-    sendHtml(connectionSocket, resp)
+    sendHtml(connectionSocket, resp, fileLastModified, fileData)
 
 
 # Bind the server port to the socket
@@ -127,7 +158,9 @@ try:
         # New socket created on return
         connectionSocket, addr = serverSocket.accept()
 
-        # Single threaded version
+        # create thread when server recieves connection request
+        # Probably should pass through thread and end it when connection is closed
+        # This now works for mutliple connections (ie: browsers/tabs open)
         makeConnection(connectionSocket, addr)
 
     # This wasnt working for me, I commented it out jsut becasue wasnt sure where to put it
@@ -138,5 +171,4 @@ try:
 except KeyboardInterrupt:
     serverSocket.close()
     print("Server is closed")
-    th.join()
     sys.exit(0)
