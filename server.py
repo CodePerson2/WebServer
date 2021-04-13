@@ -72,18 +72,20 @@ def makeConnection(connectionSocket, addr):
         try:
             sentence2 = connectionSocket.recv(1024).decode()
             sentence = sentence + sentence2
+            location = sentence.split(' ')
             print("Sentence2: ", sentence)
         except timeout:
             resp = '408'
             print('Request Timed Out')
             sendHtml(connectionSocket, resp, '', '')
+            return
 
     # Check if any lines in the request begin with If-Modified-Since
     for line in req:
         if line.find('If-Modified-Since: ') != -1:
             ifModifiedSinceFlag = True
             ifModifiedSince = line[19:len(line)]
-            print('If-Modified-Since: ' + ifModifiedSince)        
+            print('If-Modified-Since: ' + ifModifiedSince)   
 
     # Check if the HTML file exists locally
     if location[1] == '/':
