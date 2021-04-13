@@ -14,8 +14,6 @@ serverPort = 80
 # Create TCP welcoming socket
 serverSocket = socket(AF_INET, SOCK_STREAM)
 
-mutex = threading.Lock()
-
 def sendHtml(connectionSocket, resp, lastModified, fileData):
     #d = datetime.now()
     # print(d)
@@ -53,12 +51,10 @@ def sendHtml(connectionSocket, resp, lastModified, fileData):
 
     # Close connectiion too client (but not welcoming socket)
     connectionSocket.close()
-    #mutex.release()
     print("releasing mutex")
 
 # handles making the connection, uses sendHtml() to return webpage
 def makeConnection(connectionSocket, addr):
-    #mutex.acquire()
     # Read from socket (but not address as in UDP)
     sentence = connectionSocket.recv(1024).decode()
     req = sentence.split('\r\n')
