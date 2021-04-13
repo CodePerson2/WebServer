@@ -69,16 +69,19 @@ def makeConnection(connectionSocket, addr):
     ifModifiedSince = ''
 
     if len(location) < 3:
+        print("here")
         # 408 Request Timed Out, could try to read again from the socket, but use a non-blocking call with a timeout
         connectionSocket.settimeout(2)
         try:
             sentence2 = connectionSocket.recv(1024).decode()
             sentence = sentence + sentence2
+            location += sentence2.split(' ')
             print("Sentence2: ", sentence)
         except timeout:
             resp = '408'
             print('Request Timed Out')
             sendHtml(connectionSocket, resp, '', '')
+            return
 
     # Check if any lines in the request begin with If-Modified-Since
     for line in req:
