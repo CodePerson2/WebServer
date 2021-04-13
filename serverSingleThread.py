@@ -160,9 +160,7 @@ try:
         # New socket created on return
         connectionSocket, addr = serverSocket.accept()
 
-        # create thread when server recieves connection request
-        # Probably should pass through thread and end it when connection is closed
-        # This now works for mutliple connections (ie: browsers/tabs open)
+        # single threaded
         makeConnection(connectionSocket, addr)
 
     # This wasnt working for me, I commented it out jsut becasue wasnt sure where to put it
