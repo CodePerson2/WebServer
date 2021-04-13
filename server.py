@@ -24,7 +24,6 @@ def sendHtml(connectionSocket, resp, lastModified, fileData):
         responseString += 'max-age=60\r\n'
         responseString += 'Cache-Control: no-cache\r\n'
         responseString += 'Content-Type: text/html\r\n'
-        responseString += 'HTTP/1.1 200 OK\r\n'
 
         # Last-Modified: Fri, 9 Apr 2021 20:26:00 GMT\r\n
         # header and body should be separated by additional newline
