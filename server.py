@@ -14,6 +14,7 @@ serverPort = 80
 # Create TCP welcoming socket
 serverSocket = socket(AF_INET, SOCK_STREAM)
 
+mutex = threading.Lock()
 
 def sendHtml(connectionSocket, resp, lastModified, fileData):
     #d = datetime.now()
@@ -52,15 +53,17 @@ def sendHtml(connectionSocket, resp, lastModified, fileData):
 
     # Close connectiion too client (but not welcoming socket)
     connectionSocket.close()
+    #mutex.release()
+    print("releasing mutex")
 
 # handles making the connection, uses sendHtml() to return webpage
 def makeConnection(connectionSocket, addr):
-
+    #mutex.acquire()
     # Read from socket (but not address as in UDP)
     sentence = connectionSocket.recv(1024).decode()
     req = sentence.split('\r\n')
     location = req[0].split(' ')
-    print('\n' + sentence)
+    print('\nSentence 1: ' + sentence)
     print('req: ', req)
     print('\nlocation: ', location)
     resp = '200'
@@ -69,18 +72,24 @@ def makeConnection(connectionSocket, addr):
     ifModifiedSinceFlag = False
     ifModifiedSince = ''
 
+    if len(location) < 3:
+        # 408 Request Timed Out, could try to read again from the socket, but use a non-blocking call with a timeout
+        connectionSocket.settimeout(10)
+        try:
+            sentence2 = connectionSocket.recv(1024).decode()
+            sentence = sentence + sentence2
+            print("Sentence2: ", sentence)
+        except timeout:
+            resp = '408'
+            print('Request Timed Out')
+            sendHtml(connectionSocket, resp, '', '')
+
     # Check if any lines in the request begin with If-Modified-Since
     for line in req:
         if line.find('If-Modified-Since: ') != -1:
             ifModifiedSinceFlag = True
             ifModifiedSince = line[19:len(line)]
             print('If-Modified-Since: ' + ifModifiedSince)        
-
-    if len(location) < 3:
-        # 408 Request Timed Out, could try to read again from the socket, but use a non-blocking call with a timeout
-        resp = '408'
-        print('Request Timed Out')
-        sendHtml(connectionSocket, resp, '', '')
 
     # Check if the HTML file exists locally
     if location[1] == '/':
