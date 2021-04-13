@@ -73,7 +73,7 @@ clientSocket.connect((serverName,serverPort))
 # Test code 408
 print("\nTesting code 408:")
 # Reply sent within timeout time
-sentence = "GOT /index.html"
+sentence = "GET /index.html"
 clientSocket.send(sentence.encode())
 time.sleep(1)
 sentence = " HTTP1.1\r\nIf-Modified-Since: Fri, 6 Apr 2021 20:26:00 GMT\r\n"
@@ -84,7 +84,7 @@ clientSocket.close()
 clientSocket = socket(AF_INET, SOCK_STREAM)
 clientSocket.connect((serverName,serverPort))
 # Reply not sent within timeout time
-sentence = "GOT /index.html"
+sentence = "GET /index.html"
 clientSocket.send(sentence.encode())
 modifiedSentence = clientSocket.recv(1024)
 print('Reply from Server: ', modifiedSentence.decode())
