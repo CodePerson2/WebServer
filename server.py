@@ -102,14 +102,17 @@ def makeConnection(connectionSocket, addr):
         if os.path.exists(filePath):
             fileExists = True
             fileLastModified = os.path.getmtime(filePath)
+            fileLastModified = datetime.fromtimestamp(fileLastModified)
             print(fileLastModified)
             fp = open(filePath)
             data = fp.readlines()
             fp.close()
-            print("File exists locally: ", filePath)
+            
             fileData = data[0]
             for i in range(1,len(data)):
                 fileData = fileData + data[i]
+            print("File exists locally: ", filePath)
+            print(fileLastModified)
             print(fileData)
 
     if location[0] != 'GET' and location[2] != 'HTTP/1.1\r\n' or len(location) != 3:
@@ -123,7 +126,7 @@ def makeConnection(connectionSocket, addr):
 
         print(ifModifiedSinceTime)
         # Using datetime.now(), needs to be updated
-        if ifModifiedSinceTime < datetime.now():
+        if ifModifiedSinceTime < fileLastModified:
             resp = '304'
         print("Not Modified")
     elif fileExists:
