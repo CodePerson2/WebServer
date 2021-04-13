@@ -19,7 +19,7 @@ def sendHtml(connectionSocket, resp, lastModified, fileData):
     #d = datetime.now()
     # print(d)
 
-    responseString = '';
+    responseString = ''
     if resp == '200':
         responseString += 'HTTP/1.1 200 OK\r\n'
         responseString += 'max-age=60\r\n'
